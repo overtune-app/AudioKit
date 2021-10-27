@@ -33,23 +33,23 @@ AURenderObserver ParameterAutomationGetRenderObserver(AUParameterAddress address
     {
         if (actionFlags != kAudioUnitRenderAction_PreRender) return;
 
-        Float64 blockStartTime = (timestamp->mSampleTime - startSampleTime) / sampleRate;
-        Float64 blockEndTime = blockStartTime + frameCount / sampleRate;
+        Float64 blockStartTime = timestamp->mSampleTime - startSampleTime;
+        Float64 blockEndTime = blockStartTime + frameCount;
 
         AUValue initial = NAN;
 
         // Skip over events completely in the past to determine
         // an initial value.
-        for (; index < count; ++index) {
+        for(; index < count; ++index) {
             auto event = events[index];
-            if ( !(event.startTime + event.rampDuration < blockStartTime) ) {
-                break;
+            if ( round(sampleRate * (event.startTime + event.rampDuration)) >= blockStartTime ) {
+               break;
             }
             initial = event.targetValue;
         }
 
         // Do we have an initial value from completed events?
-        if (!isnan(initial)) {
+        if(!isnan(initial)) {
             scheduleParameterBlock(AUEventSampleTimeImmediate,
                                    0,
                                    address,
@@ -61,18 +61,18 @@ AURenderObserver ParameterAutomationGetRenderObserver(AUParameterAddress address
             auto event = events[index];
 
             // Is it after the current block?
-            if (event.startTime >= blockEndTime) break;
+            if (round(sampleRate * event.startTime) >= blockEndTime) break;
 
-            AUEventSampleTime startTime = (event.startTime - blockStartTime) * sampleRate;
-            AUAudioFrameCount duration = event.rampDuration * sampleRate;
+            AUEventSampleTime startTime = round(sampleRate * event.startTime - blockStartTime);
+            AUAudioFrameCount duration = round(sampleRate * event.rampDuration);
 
             // If the event has already started, ensure we hit the targetValue
             // at the appropriate time.
-            if (startTime < 0) {
+            if(startTime < 0) {
                 duration += startTime;
             }
 
-            scheduleParameterBlock(startTime,
+            scheduleParameterBlock(AUEventSampleTimeImmediate + startTime,
                                    duration,
                                    address,
                                    event.targetValue);
