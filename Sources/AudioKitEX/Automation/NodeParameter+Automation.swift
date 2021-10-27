@@ -47,8 +47,8 @@ extension NodeParameter {
             
             guard let observer = ParameterAutomationGetRenderObserver(parameter.address,
                                                                       avAudioNode.auAudioUnit.scheduleParameterBlock,
-                                                                      Float(Settings.sampleRate),
-                                                                      Float(lastTime.sampleTime),
+                                                                      Settings.sampleRate,
+                                                                      Float64(lastTime.sampleTime),
                                                                       automationBaseAddress,
                                                                       events.count) else { return }
             

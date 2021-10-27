@@ -12,8 +12,8 @@
 extern "C"
 AURenderObserver ParameterAutomationGetRenderObserver(AUParameterAddress address,
                                                       AUScheduleParameterBlock scheduleParameterBlock,
-                                                      float sampleRate,
-                                                      float startSampleTime,
+                                                      Float64 sampleRate,
+                                                      Float64 startSampleTime,
                                                       const struct AutomationEvent* eventsArray,
                                                       size_t count) {
 
@@ -33,8 +33,8 @@ AURenderObserver ParameterAutomationGetRenderObserver(AUParameterAddress address
     {
         if (actionFlags != kAudioUnitRenderAction_PreRender) return;
 
-        float blockStartTime = (timestamp->mSampleTime - startSampleTime) / sampleRate;
-        float blockEndTime = blockStartTime + frameCount / sampleRate;
+        Float64 blockStartTime = (timestamp->mSampleTime - startSampleTime) / sampleRate;
+        Float64 blockEndTime = blockStartTime + frameCount / sampleRate;
 
         AUValue initial = NAN;
 
